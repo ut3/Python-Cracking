@@ -55,7 +55,7 @@ def insert_node(left, right, node):
     right.left = node
     return node
 
-def insert_data(left, right, data): 
+def insert_data(left, right, data):
     node = Node(data)
     return insert_node(left, right, node)
 
@@ -76,7 +76,7 @@ class Iter:
     def __next__(self):
         assert(self.count < self.maxsize)
         self.count += 1
-        
+
         # Iter already done, or iter for empty list
         if self.end or None is self.cursor:
             self.end = True
@@ -84,10 +84,9 @@ class Iter:
 
         # Last Node
         if self.cursor is self.tail:
-            self.end = True               
+            self.end = True
             return self.cursor
 
         old = self.cursor
         self.cursor = self.cursor.right
         return old
-    

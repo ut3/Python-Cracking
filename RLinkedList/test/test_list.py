@@ -177,7 +177,7 @@ def test_front_size_1000():
     for i in range(1, 1001, 1):
         list.push_front("s" + str(i))
         assert("s1" == list.back())
-        assert("s" + str(i) == list.front())    
+        assert("s" + str(i) == list.front())
     assert(1000 == list.size())
 
 def test_at_size_100():

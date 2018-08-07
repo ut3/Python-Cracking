@@ -26,7 +26,7 @@ from RLinkedList import Node, delete_node, insert_node, insert_data, Iter
 import RUtil
 import functools
 
-class List:      
+class List:
     maxsize = 10000
     head = None # leftmost
     tail = None # rightmost
@@ -71,14 +71,14 @@ class List:
             self.head = Node(value)
             self.head.right = self.head
             self.head.left = self.head
-            self.tail = self.head             
+            self.tail = self.head
             return self.head
         return insert_data(left, right, value)
 
     def push_back(self, value):
         self.tail = self.insert(self.tail, self.head, value)
-        
-    def push_front(self, value):     
+
+    def push_front(self, value):
         self.head = self.insert(self.tail, self.head, value)
 
     def erase(self, node):
@@ -102,7 +102,7 @@ class List:
     def erase_front(self):
         return self.erase(self.head)
 
-    def node_at(self, index):       
+    def node_at(self, index):
         i = 0
         for item in self:
             if i == index:

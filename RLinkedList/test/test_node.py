@@ -45,7 +45,7 @@ def test_node_left():
     node = Node("parent")
     left = Node("left")
     node.left = left
-    assert(node.left is left)  
+    assert(node.left is left)
 
 def test_left_type_not_equal():
     node = Node()
@@ -64,14 +64,14 @@ def test_verify_link_negative_left():
     right.left = left
     with pytest.raises(AssertionError):
         verify_link(left, right)
-  
+
 def test_verify_link_negative_right():
     left = Node("left")
     right = Node("right")
     left.right = right
     with pytest.raises(AssertionError):
         verify_link(left, right)
-              
+
 def verify_links(pairs):
     for pair in pairs:
         verify_link(pair[0], pair[1])
@@ -110,24 +110,24 @@ def test_delete_right_node():
 
 def test_insert_node_right_left():
     (left, midleft, midright, right) = setup_nodes()
-    new = Node("new") 
+    new = Node("new")
     insert_node(right, left, new)
     verify_links([(left, midleft), (midleft, midright), (midright, right), (right, new), (new, left)])
 
 def test_insert_node_left_midleft():
     (left, midleft, midright, right) = setup_nodes()
-    new = Node("new") 
+    new = Node("new")
     insert_node(left, midleft, new)
     verify_links([(left, new), (new, midleft), (midleft, midright), (midright, right), (right, left)])
 
 def test_insert_node_midleft_midright():
     (left, midleft, midright, right) = setup_nodes()
-    new = Node("new") 
+    new = Node("new")
     insert_node(midleft, midright, new)
     verify_links([(left, midleft), (midleft, new), (new, midright), (midright, right), (right, left)])
 
 def test_insert_node_midright_right():
     (left, midleft, midright, right) = setup_nodes()
-    new = Node("new") 
+    new = Node("new")
     insert_node(midright, right, new)
     verify_links([(left, midleft), (midleft, midright), (midright, new), (new, right), (right, left)])
