@@ -2,6 +2,7 @@ from RLinkedList import Node
 
 class List:
     """back, size, insert"""
+    maxsize = 1000000
     head = None # leftmost
     tail = None # rightmost
     def __init__(self):
@@ -22,7 +23,7 @@ class List:
             return 0
         cursor = self.head
         count = 1
-        while (cursor is not self.tail and count < 10000):
+        while (cursor is not self.tail and count < self.maxsize):
             count+=1
             cursor = cursor.right
         return count
@@ -93,7 +94,7 @@ class List:
             return None
         cursor = self.head
         i = 0
-        while (i < index and cursor is not self.tail):
+        while (i < index and cursor is not self.tail and i < self.maxsize):
             print("i:", i, " data:", cursor.data)
             cursor = cursor.right
             i+=1
