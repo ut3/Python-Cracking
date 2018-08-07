@@ -1,1 +1,1 @@
-I don't have opportunity to use Python much, and so I'm doing some review in this repository
+I don't often have opportunity to use Python. To keep myself in decent shape, I'm doing some review here. 
