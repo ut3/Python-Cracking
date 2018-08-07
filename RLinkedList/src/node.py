@@ -64,7 +64,7 @@ class Iter:
     cursor = None
     count = 0
     end = False
-    maxsize = 10000
+    maxsize = 100000
 
     def __init__(self, cursor, tail):
         self.cursor = cursor

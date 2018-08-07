@@ -27,7 +27,6 @@ import RUtil
 import functools
 
 class List:
-    maxsize = 10000
     head = None # leftmost
     tail = None # rightmost
 
@@ -103,6 +102,7 @@ class List:
         return self.erase(self.head)
 
     def node_at(self, index):
+        self.sanity()
         i = 0
         for item in self:
             if i == index:
