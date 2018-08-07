@@ -22,5 +22,8 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .src.node import Node, delete_node, insert_node, insert_data, Iter
-from .src.list import List
+def accumulate(collection, function):
+    accumulated = None
+    for item in collection:
+        accumulated = function(item, accumulated)
+    return accumulated

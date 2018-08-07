@@ -1,6 +1,11 @@
-# Byte-compiled / optimized / DLL files
+# Rick / python
 __pycache__/
 *.py[cod]
+.cache/
+**/.pytest_cache/
+**/__pycache__/
+**/*.pyc
+venv/
 
 # C extensions
 *.so
@@ -51,6 +56,3 @@ docs/_build/
 
 # VS Code
 .vscode/
-
-# PyTest
-.pytest_cache/

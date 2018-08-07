@@ -22,5 +22,12 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .src.node import Node, delete_node, insert_node, insert_data, Iter
-from .src.list import List
+import RUtil
+import pytest
+
+def test_accumulate():
+    def add(item, sum):
+        return item + (0 if sum is None else sum)
+    list = (5, 10, 15, 20, 25, 30, 2, -1) # 106
+    sum = RUtil.accumulate(list, add)
+    assert(106 == sum)

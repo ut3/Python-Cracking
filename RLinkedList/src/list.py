@@ -1,34 +1,50 @@
-from RLinkedList import Node, delete_node, insert_node, insert_data
+# Copyright (c) 2018, J. Rick Ramstetter
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+from RLinkedList import Node, delete_node, insert_node, insert_data, Iter
+import RUtil
 import functools
 
-class List:
-    """back, size, insert"""
-    maxsize = 1000000
+class List:      
+    maxsize = 10000
     head = None # leftmost
     tail = None # rightmost
+
     def __init__(self):
         return
 
     def sanity(self):
+        # If self.head is None, then self.tail must also be none
         assert(self.head is not None or self.head is None and self.tail is None)
+        # If self.tail is not None, then self.head must also be not None
         assert(self.tail is None or self.tail is not None and self.head is not None)
+        # If self.head is not None, then self.tail.right should be self.head
         assert(self.head is None or self.head is self.tail.right)
-    
-    def __create_initial_node(self, value):
-        self.head = Node(value)
-        self.head.right = self.head
-        self.head.left = self.head
-        self.tail = self.head 
+        assert(self.head is None or self.head.left is self.tail)
 
     def __iter__(self):
-        self.sanity()
-        cursor = self.head
-        count = 1
-        while (cursor is not self.tail and count < self.maxsize):
-            count+=1
-            yield cursor
-            cursor = cursor.right
-        assert(self.maxsize != count)
+        return Iter(self.head, self.tail)
 
     def is_empty(self):
         self.sanity()
@@ -42,79 +58,57 @@ class List:
         self.sanity()
         return None if self.head is None else self.head.data
 
-    def accumulate_nodes(self, fxn):
-        accumulated = None
-        for node in self:
-            accumulated = fxn(node, accumulated)
-        return accumulated
-
     def size(self):
-        add = lambda node, count: 2 if None is count else count + 1
-        count = self.accumulate_nodes(add)
-        if None is count:
-            return 0 if None is self.head else 1
+        self.sanity()
+        count = 0
+        for _ in self:
+            count += 1
         return count
 
-    def push_back(self, value):
+    def insert(self, left, right, value):
         self.sanity()
-        if (self.head is None): 
-            self.__create_initial_node(value)
-            return
-        self.tail = insert_data(self.tail, self.head, value)
+        if (self.head is None):
+            self.head = Node(value)
+            self.head.right = self.head
+            self.head.left = self.head
+            self.tail = self.head             
+            return self.head
+        return insert_data(left, right, value)
+
+    def push_back(self, value):
+        self.tail = self.insert(self.tail, self.head, value)
         
     def push_front(self, value):     
-        self.sanity()
-        if (self.head is None): 
-            self.__create_initial_node(value)
-            return
-        self.head = insert_data(self.tail, self.head, value)
+        self.head = self.insert(self.tail, self.head, value)
 
-    def erase_back(self):
-        self.sanity()
-        if (self.tail is None):
-            return None
-        data = self.tail.data
-        if (self.tail is self.head):
-            self.head = None
-            self.tail = None
-            return data
-        self.tail = delete_node(self.tail).left
-        return data
-
-    def erase_front(self):
+    def erase(self, node):
         self.sanity()
         if (self.head is None):
             return None
-        data = self.head.data
-        if (self.tail is self.head):
+        if (node is self.head and node is self.tail):
             self.head = None
             self.tail = None
-            return data 
-        self.head = delete_node(self.head)
-        return data
+            return node.data
+        right = delete_node(node)
+        if (node is self.head):
+            self.head = right
+        elif (node is self.tail):
+            self.tail = right.left
+        return node.data
 
-    def node_at(self, index):
-        cursor = self.head
+    def erase_back(self):
+        return self.erase(self.tail)
+
+    def erase_front(self):
+        return self.erase(self.head)
+
+    def node_at(self, index):       
         i = 0
-        while (i < index and cursor is not self.tail and i < self.maxsize):
-            print("i:", i, " data:", cursor.data)
-            cursor = cursor.right
-            i+=1
-        return cursor
-
-    def delete(self, node):
-        return delete_node(node)
-
-    def set(self, index, value):
-        if isinstance(index, int):
-            self.set(self.node_at(index), value)
-        elif isinstance(index, Node):
-            if value is None:
-                self.delete(index)
-            else:
-                index.data = value
-        else:
-            raise ValueError("Data type is not Node or int:", type(index))
+        for item in self:
+            if i == index:
+                return item
+            i += 1
+        return None
 
     def at(self, index):
         return self.node_at(index).data
