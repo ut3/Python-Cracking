@@ -116,7 +116,6 @@ def test_erase_front_1000():
     assert("s1000" == value)
     assert(None == list.front())
     assert(None == list.back())
-    
 
 def test_front_size_1():
     list = RLinkedList.List()
@@ -170,3 +169,9 @@ def test_at_front_size_100():
         list.push_front("s" + str(i))
     for i in range(100, 0, 1):
         assert("s" + str(i) == list.at(i))
+
+def tes_set_0():
+    return
+
+def test_set_100():
+    return
