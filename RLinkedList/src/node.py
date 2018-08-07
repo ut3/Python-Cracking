@@ -1,20 +1,19 @@
 
 class Node:
-    def __init__(self, data = None, left = None, right = None):
-        self.set_child("left", left)
-        self.set_child("right", right)
+    left = None
+    right = None
+    data = None
+    def __init__(self, data = None):
         self.data = data
 
     def __setattr__(self, name, value):
         if name == "left" or name == "right":
-            self.set_child(name, value)
+            self.enforce_type(name, value)
         self.__dict__[name] = value
 
-    def set_child(self, name, value):
-        """Set a child node iff the new link will be of the same type as self"""
+    def enforce_type(self, name, value):
         if (value is not None and not isinstance(value, Node)):
-            raise ValueError("set_child: child type did not match parent: child=", name, " valuetype=", type(value), " value=", value)
-        self.__dict__[name] = value 
+            raise ValueError("set_link: node type did not match parent: newnode=", name, " valuetype=", type(value), " value=", value)
 
     def __repr__(self):
         return str(self.data)
