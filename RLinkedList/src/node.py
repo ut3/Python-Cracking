@@ -23,10 +23,9 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class Node:
-    left = None
-    right = None
-    data = None
     def __init__(self, data = None):
+        self.left = None
+        self.right = None
         self.data = data
 
     def __setattr__(self, name, value):
@@ -60,15 +59,14 @@ def insert_data(left, right, data):
     return insert_node(left, right, node)
 
 class Iter:
-    tail = None
-    cursor = None
-    count = 0
-    end = False
+    """Iterator for a collection of class Node"""
     maxsize = 100000
 
     def __init__(self, cursor, tail):
         self.cursor = cursor
         self.tail = tail
+        self.count = 0
+        self.end = False
 
     def __iter__(self):
         return self

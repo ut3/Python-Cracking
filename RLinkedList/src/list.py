@@ -27,10 +27,9 @@ import RUtil
 import functools
 
 class List:
-    head = None # leftmost
-    tail = None # rightmost
-
     def __init__(self):
+        self.head = None
+        self.tail = None
         return
 
     def sanity(self):
