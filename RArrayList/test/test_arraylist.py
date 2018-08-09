@@ -78,9 +78,6 @@ def test_push_back_two():
     assert(explen == list.bytesConsumed)
     assert(data1 == list.at(0))
     assert(data2 == list.at(1))
-    list.erase_last()
-    list.erase_last()
-    assert(0)
 
 def test_push_back_three():
     list = ArrayList()
