@@ -27,32 +27,33 @@
 import sys, numpy as np, pickle as pk
 from sortedcontainers import SortedDict
 
+FRAME_HEADER = 2 # bytes
 
-# Data format is: 0, object length 0-256, data
+# Data frame format is: 0, object length 0-256, data
 # Input is an object
 # Output is a numpy array
-def pack(value):
-    pickled = pk.dumps(value, pk.HIGHEST_PROTOCOL)
+def pack_frame(frame):
+    pickled = pk.dumps(frame, pk.HIGHEST_PROTOCOL)
     if (len(pickled) is 0):
-        raise ValueError("pickled representation of", value, "has size 0")
+        raise ValueError("pickled representation of", frame, "has size 0")
     if (len(pickled) > 255):
         raise ValueError("pickled representation is bigger than 255,", len(pickled))
-    out = np.zeros(len(pickled) + 2, np.uint8, 'C')
-    out[0] = 0
-    out[1] = len(pickled)
+    frame = np.zeros(len(pickled) + FRAME_HEADER, np.uint8, 'C')
+    for i in range(0, FRAME_HEADER):
+        frame[i] = 0
+    frame[1] = len(pickled) # payload length, not including header
     for i in range(0, len(pickled)):
-        out[2+i] = pickled[i]
-    return out
+        frame[FRAME_HEADER + i] = pickled[i]
+    return frame
 
 
 # Data format is: 0 byte, one byte object length 0-256, N bytes data
 # Output is an object
-def unpack(value):
-    if not isinstance(value, np.ndarray):
+def unpack_frame(frame):
+    if not isinstance(frame, np.ndarray):
         raise ValueError("Expecting a np.ndarray as input")
-    byteval = value[2:(2 + value[1])].tobytes('C')
+    byteval = frame[FRAME_HEADER:(FRAME_HEADER + frame[1])].tobytes('C')
     return pk.loads(byteval)
-
 
 
 class ArrayList:
@@ -74,6 +75,12 @@ class ArrayList:
         # Map index to byte offset
         self.dictionary = SortedDict()
 
+        # Track the number of times it grew
+        self.timesGrown = 0
+
+    def dump_storage(self):
+        for i in range(0, len(self.storage)):
+            print("storage[", i, "] = ", self.storage[i])
 
     def bytes_per_element(self):
         if self.elementCount is 0:
@@ -98,20 +105,19 @@ class ArrayList:
         if self.storage is None:
             self.storage = np.zeros(self.initialSize, np.uint8, 'C')
 
-        packed = pack(value)
+        frame = pack_frame(value)
 
-        # Grow
-        if self.bytesConsumed + len(packed) > self.storage.size:
+        # Grow if full frame length (including header) is too big
+        if self.bytesConsumed + len(frame) > self.storage.size:
             old = self.storage
             self.storage = np.zeros(len(old) * self.growthFactor, np.uint8, 'C')
-            i = 0
-            for _ in np.nditer(old, order='C'):
+            for i in range(0, len(old)):
                 self.storage[i] = old[i]
+            self.timesGrown += 1
 
         # Assign
-        for i in range(0, len(packed)):
-            self.storage[self.bytesConsumed + i] = packed[i]
-            #print("storage[", self.bytesConsumed + i, "] = ", packed[i])
+        for i in range(0, len(frame)):
+            self.storage[self.bytesConsumed + i] = frame[i]
         self.dictionary[self.elementCount] = self.bytesConsumed
         self.bytesConsumed = self.bytesConsumed + i + 1
         self.elementCount += 1
@@ -120,25 +126,29 @@ class ArrayList:
     def erase_last(self):
         if (0 is self.elementCount):
             return
-        start = self.dictionary[self.elementCount - 1]
-        length = self.storage[start + 1]
-        # data = self.storage[start : start + length + 2]
-        for i in range(start, start + length + 2):
+        (start, length) = self.index_to_byte(self.elementCount - 1)
+        data = self.at_bytes(start, length)
+        for i in range(start, start + length + FRAME_HEADER):
             self.storage[i] = 0
         self.elementCount -= 1
         assert(0 <= self.elementCount)
-        self.bytesConsumed -= length - 2
+        self.bytesConsumed -= (length + FRAME_HEADER)
         assert(0 <= self.bytesConsumed)
-        # for i in range(0, len(self.storage)):
-        #     print("storage[", i, "] = ", self.storage[i])
+        return data
 
 
     def size(self):
         return self.elementCount
 
+    def index_to_byte(self, index):
+        start = self.dictionary[index] # start of frame, including header
+        length = self.storage[start + 1] # payload length, not including header
+        return (start, length)
+
+    def at_bytes(self, start, length):
+        frame = self.storage[start : start + length + FRAME_HEADER]
+        return unpack_frame(frame)
 
     def at(self, index):
-        start = self.dictionary[index]
-        length = self.storage[start + 1]
-        data = self.storage[start : start + length + 2]
-        return unpack(data)
+        (start, length) = self.index_to_byte(index)
+        return self.at_bytes(start, length)

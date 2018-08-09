@@ -22,4 +22,4 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-from .src.arraylist import ArrayList, pack, unpack
+from .src.arraylist import ArrayList, pack_frame, unpack_frame

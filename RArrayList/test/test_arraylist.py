@@ -23,7 +23,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import pytest
-from RArrayList import ArrayList, pack, unpack
+from RArrayList import ArrayList, pack_frame, unpack_frame
 import numpy as np
 import pickle as pk
 
@@ -35,26 +35,26 @@ def test_create_arraylist():
 def test_pack_unpack():
     input = "input string"
     pkinput = pk.dumps(input, pk.HIGHEST_PROTOCOL)
-    serialized = pack(input)
+    serialized = pack_frame(input)
     assert(0 == serialized[0])
     assert(len(pkinput) == serialized[1])
     assert(pkinput == serialized[2:len(serialized)].tobytes('C'))
-    assert(input == unpack(serialized))
+    assert(input == unpack_frame(serialized))
 
 def test_pack_too_big():
     input = "1" * 256
     with pytest.raises(ValueError):
-        pack(input)
+        pack_frame(input)
 
 def test_unpack_negative_path():
     with pytest.raises(ValueError):
-        unpack("this is not a numpy array")
+        unpack_frame("this is not a numpy array")
     with pytest.raises(ValueError):
-        unpack(None)
+        unpack_frame(None)
     with pytest.raises(ValueError):
-        unpack(0)
+        unpack_frame(0)
     with pytest.raises(ValueError):
-        unpack(1)
+        unpack_frame(1)
 
 def test_push_back_one():
     list = ArrayList()
@@ -63,17 +63,17 @@ def test_push_back_one():
     assert(0 != len(list.storage))
     assert(ArrayList.initialSize == len(list.storage))
     assert(1 == list.size())
-    assert(len(pack(data)) == list.bytesConsumed)
+    assert(len(pack_frame(data)) == list.bytesConsumed)
     assert(data == list.at(0))
 
 def test_push_back_two():
     list = ArrayList()
     data1 = "first"
     list.push_back(data1)
-    explen = len(pack(data1))
+    explen = len(pack_frame(data1))
     data2 = "second"
     list.push_back(data2)
-    explen += len(pack(data2))
+    explen += len(pack_frame(data2))
     assert(2 == list.size())
     assert(explen == list.bytesConsumed)
     assert(data1 == list.at(0))
@@ -83,13 +83,13 @@ def test_push_back_three():
     list = ArrayList()
     data1 = "first"
     list.push_back(data1)
-    explen = len(pack(data1))
+    explen = len(pack_frame(data1))
     data2 = "second"
     list.push_back(data2)
-    explen += len(pack(data2))
+    explen += len(pack_frame(data2))
     data3 = "third"
     list.push_back(data3)
-    explen += len(pack(data3))
+    explen += len(pack_frame(data3))
     assert(3 == list.size())
     assert(explen == list.bytesConsumed)
     for i in range(explen, len(list.storage)):
@@ -102,36 +102,53 @@ def test_push_back_grow():
     list = ArrayList()
     data = "a" * 150
     list.push_back(data)
-    explen = len(pack(data))
+    explen = len(pack_frame(data))
     assert(1 == list.size())
     assert(explen == list.bytesConsumed)
     assert(256 == len(list.storage))
     for i in range(explen, len(list.storage)):
         assert(0 == list.storage[i])
     assert(0 != list.storage[explen - 1])
+    assert(1 == list.timesGrown)
 
 def test_push_back_grow_three():
     list = ArrayList()
     data = "a" * 200
     list.push_back(data) # grows to 128 * 2 = 256
-    explen = len(pack(data))
+    explen = len(pack_frame(data))
     assert(explen == list.bytesConsumed)
     assert(list.initialSize * list.growthFactor**1 == len(list.storage))
+    assert(1 == list.timesGrown)
 
     data = "b" * 200
     list.push_back(data) # grows to 256 * 2 = 512
-    explen += len(pack(data))
+    explen += len(pack_frame(data))
     assert(explen == list.bytesConsumed)
     assert(list.initialSize * list.growthFactor**2 == len(list.storage))
+    assert(2 == list.timesGrown)
 
     data = "c" * 200
     list.push_back(data) # grows to 512 * 2 = 1024
-    explen += len(pack(data))
+    explen += len(pack_frame(data))
     assert(explen == list.bytesConsumed)
     assert(list.initialSize * list.growthFactor**3 == len(list.storage))
+    assert(3 == list.timesGrown)
 
     assert(3 == list.size())
     for i in range(explen, len(list.storage)):
         assert(0 == list.storage[i])
     assert(0 != list.storage[explen - 1])
     assert(3 == list.elementCount)
+
+
+def test_erase():
+    list = ArrayList()
+    for i in range(0,10):
+        list.push_back("s" + str(i))
+        assert(i + 1 == list.size())
+    assert(10 == list.size())
+    for i in range(10, 0, -1):
+        elem = list.erase_last()
+        assert("s" + str(i-1) == elem)
+        assert(i - 1 == list.size())
+    assert(0 == list.size())
